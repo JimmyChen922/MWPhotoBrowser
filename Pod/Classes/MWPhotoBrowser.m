@@ -1584,7 +1584,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 
 - (void)doneButtonPressed:(id)sender {
     // Only if we're modal and there's a done button
-    if (_doneButton) {
+    if (_doneButton||customRighBtn) {
         // See if we actually just want to show/hide grid
         if (self.enableGrid) {
             if (self.startOnGrid && !_gridController) {
