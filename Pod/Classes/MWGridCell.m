@@ -158,10 +158,13 @@
 }
 
 - (void)selectionButtonPressed {
-    if ([_gridController.browser.delegate currentSelectdItemCount]>=_gridController.browser.maxSelectCount) {
-        [_gridController.browser.delegate selectdItemsReachMax:[_gridController.browser.delegate currentSelectdItemCount]];
-        return;
+    if (!_selectedButton.selected) {
+        if ([_gridController.browser.delegate currentSelectdItemCount]>=_gridController.browser.maxSelectCount) {
+            [_gridController.browser.delegate selectdItemsReachMax:[_gridController.browser.delegate currentSelectdItemCount]];
+            return;
+        }
     }
+    
     _selectedButton.selected = !_selectedButton.selected;
     [_gridController.browser setPhotoSelected:_selectedButton.selected atIndex:_index];
 }

@@ -1182,11 +1182,14 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 #pragma mark - Interactions
 
 - (void)selectedButtonTapped:(id)sender {
-    if ([self.delegate currentSelectdItemCount]>=self.maxSelectCount) {
-        [self.delegate selectdItemsReachMax:[self.delegate currentSelectdItemCount]];
-        return;
-    }
+
     UIButton *selectedButton = (UIButton *)sender;
+    if (!selectedButton.selected) {
+        if ([self.delegate currentSelectdItemCount]>=self.maxSelectCount) {
+            [self.delegate selectdItemsReachMax:[self.delegate currentSelectdItemCount]];
+            return;
+        }        
+    }
     selectedButton.selected = !selectedButton.selected;
     NSUInteger index = NSUIntegerMax;
     for (MWZoomingScrollView *page in _visiblePages) {
