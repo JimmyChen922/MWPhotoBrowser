@@ -14,7 +14,7 @@
 #import "UIImage+MWPhotoBrowser.h"
 
 #define PADDING                  10
-
+#define MAX_SELECT_COUNT 10
 static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 
 @implementation MWPhotoBrowser
@@ -74,6 +74,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     _startOnGrid = NO;
     _enableSwipeToDismiss = YES;
     _delayToHideElements = 5;
+    _maxSelectCount = MAX_SELECT_COUNT;
+    _type = NORMAL_TYPE;
     _visiblePages = [[NSMutableSet alloc] init];
     _recycledPages = [[NSMutableSet alloc] init];
     _photos = [[NSMutableArray alloc] init];
@@ -206,16 +208,39 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     
     // Navigation buttons
     if ([self.navigationController.viewControllers objectAtIndex:0] == self) {
-        // We're first on stack so show done button
-        _doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
-        // Set appearance
-        [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-        [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
-        [_doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
-        [_doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsLandscapePhone];
-        [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
-        [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
-        self.navigationItem.rightBarButtonItem = _doneButton;
+
+        if (_type == PICKER_TYPE) {
+            customRighBtn = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"btn_send", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
+            // Set appearance
+            [customRighBtn setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+            [customRighBtn setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
+            [customRighBtn setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+            [customRighBtn setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsLandscapePhone];
+            [customRighBtn setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
+            [customRighBtn setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
+            self.navigationItem.rightBarButtonItem = customRighBtn;
+            
+            customLeftBtn = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"btn_cancel", nil) style:UIBarButtonItemStylePlain target:self action:@selector(cancelButtonPressed:)];
+            // Set appearance
+            [customLeftBtn setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+            [customLeftBtn setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
+            [customLeftBtn setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+            [customLeftBtn setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsLandscapePhone];
+            [customLeftBtn setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
+            [customLeftBtn setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
+            self.navigationItem.leftBarButtonItem = customLeftBtn;
+        }else{
+            // We're first on stack so show done button
+            _doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
+            // Set appearance
+            [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+            [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
+            [_doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+            [_doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsLandscapePhone];
+            [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
+            [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
+            self.navigationItem.rightBarButtonItem = _doneButton;
+        }
     } else {
         // We're not first so show back button
         UIViewController *previousViewController = [self.navigationController.viewControllers objectAtIndex:self.navigationController.viewControllers.count-2];
@@ -700,6 +725,18 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             [self.delegate photoBrowser:self photoAtIndex:index selectedChanged:selected];
         }
     }
+    
+    if (_type == PICKER_TYPE) {
+        if (_gridController) {
+            if ([self.delegate currentSelectdItemCount]>0) {
+                customRighBtn.enabled = YES;
+            }else{
+                customRighBtn.enabled = NO;
+            }
+        }else{
+            customRighBtn.enabled = YES;
+        }
+    }
 }
 
 - (UIImage *)imageForPhoto:(id<MWPhoto>)photo {
@@ -1145,6 +1182,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 #pragma mark - Interactions
 
 - (void)selectedButtonTapped:(id)sender {
+    if ([self.delegate currentSelectdItemCount]>=self.maxSelectCount) {
+        [self.delegate selectdItemsReachMax:[self.delegate currentSelectdItemCount]];
+        return;
+    }
     UIButton *selectedButton = (UIButton *)sender;
     selectedButton.selected = !selectedButton.selected;
     NSUInteger index = NSUIntegerMax;
@@ -1327,6 +1368,14 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [_gridController didMoveToParentViewController:self];
     }];
     
+    if (_type == PICKER_TYPE) {
+        [customRighBtn setTitle:NSLocalizedString(@"btn_send", @"")];
+        if ([self.delegate currentSelectdItemCount]>0) {
+            customRighBtn.enabled = YES;
+        }else{
+            customRighBtn.enabled = NO;
+        }
+    }
 }
 
 - (void)hideGrid {
@@ -1365,6 +1414,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [self setControlsHidden:NO animated:YES permanent:NO]; // retrigger timer
     }];
 
+    if (_type == PICKER_TYPE) {
+        customRighBtn.enabled = YES;
+        [customRighBtn setTitle:NSLocalizedString(@"btn_done", @"")];
+    }
 }
 
 #pragma mark - Control Hiding / Showing
@@ -1547,6 +1600,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             [self dismissViewControllerAnimated:YES completion:nil];
         }
     }
+}
+
+- (void)cancelButtonPressed:(id)sender{
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - Actions
