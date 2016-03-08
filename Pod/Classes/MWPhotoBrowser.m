@@ -240,7 +240,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             [customLeftBtn setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsLandscapePhone];
             [customLeftBtn setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
             [customLeftBtn setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
-
+            self.navigationItem.leftBarButtonItem = customLeftBtn;
         }else{
             // We're first on stack so show done button
             _doneButton = [[UIBarButtonItem alloc] initWithTitle:self.customRightBtnString style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
