@@ -58,6 +58,11 @@
 @property int maxSelectCount;
 #define NORMAL_TYPE 0
 #define PICKER_TYPE 1
+#define CHOSE_ONE_TYPE 2
+
+@property (nonatomic) NSString *customLeftBtnString;
+@property (nonatomic) NSString *customRightGridBtnString;
+@property (nonatomic) NSString *customRightBtnString;
 @property int type;
 
 // Customise image selection icons as they are the only icons with a colour tint

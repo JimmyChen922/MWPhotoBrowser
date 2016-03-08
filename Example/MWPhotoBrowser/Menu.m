@@ -1231,6 +1231,12 @@
     NSLog(@"Did finish modal presentation");
     [self dismissViewControllerAnimated:YES completion:nil];
 }
+- (int)currentSelectdItemCount{
+    return 0;
+}
+- (void)selectdItemsReachMax:(int)count{
+
+}
 
 #pragma mark - Load Assets
 
