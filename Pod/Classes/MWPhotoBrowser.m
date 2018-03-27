@@ -80,7 +80,11 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     _recycledPages = [[NSMutableSet alloc] init];
     _photos = [[NSMutableArray alloc] init];
     _thumbPhotos = [[NSMutableArray alloc] init];
-    _currentGridContentOffset = CGPointMake(0, CGFLOAT_MAX);
+    if (@available(iOS 11.0, *)) {
+    
+    } else {
+        _currentGridContentOffset = CGPointMake(0, CGFLOAT_MAX);
+    }
     _didSavePreviousStateOfNavBar = NO;
     self.automaticallyAdjustsScrollViewInsets = NO;
     
@@ -378,6 +382,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             _leaveStatusBarAlone = YES;
         }
     }
+    
     // Set style
     if (!_leaveStatusBarAlone && UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
         _previousStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
@@ -405,7 +410,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     if (_currentPageIndex != _pageIndexBeforeRotation) {
         [self jumpToPageAtIndex:_pageIndexBeforeRotation animated:NO];
     }
-
+    
+    // Layout
+    if (@available(iOS 11.0, *)) {
+        [self layoutVisiblePages];
+    }
+    [self.view setNeedsLayout];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -516,7 +526,11 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 
 - (void)viewWillLayoutSubviews {
     [super viewWillLayoutSubviews];
-    [self layoutVisiblePages];
+    if (@available(iOS 11.0, *)) {
+        // do nothing
+    } else {
+        [self layoutVisiblePages];
+    }
 }
 
 - (void)layoutVisiblePages {
@@ -1049,7 +1063,15 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     CGFloat height = 44;
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone &&
         UIInterfaceOrientationIsLandscape(orientation)) height = 32;
-	return CGRectIntegral(CGRectMake(0, self.view.bounds.size.height - height, self.view.bounds.size.width, height));
+    
+    CGFloat adjust = 0;
+    if (@available(iOS 11.0, *)) {
+        //Account for possible notch
+        UIEdgeInsets safeArea = [[UIApplication sharedApplication] keyWindow].safeAreaInsets;
+        adjust = safeArea.bottom;
+    }
+	
+    return CGRectIntegral(CGRectMake(0, self.view.bounds.size.height - height- adjust, self.view.bounds.size.width, height));
 }
 
 - (CGRect)frameForCaptionView:(MWCaptionView *)captionView atIndex:(NSUInteger)index {
@@ -1343,7 +1365,11 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     
     // Init grid controller
     _gridController = [[MWGridViewController alloc] init];
-    _gridController.initialContentOffset = _currentGridContentOffset;
+    if (@available(iOS 11.0, *)) {
+        
+    } else {
+        _gridController.initialContentOffset = _currentGridContentOffset;
+    }
     _gridController.browser = self;
     _gridController.selectionMode = _displaySelectionButtons;
     _gridController.view.frame = self.view.bounds;
@@ -1406,9 +1432,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         }
         return;
     }
-    
+    if (@available(iOS 11.0, *)) {
+        
+    } else {
     // Remember previous content offset
-    _currentGridContentOffset = _gridController.collectionView.contentOffset;
+        _currentGridContentOffset = _gridController.collectionView.contentOffset;
+    }
     
     // Restore action button if it was removed
     if (_gridPreviousRightNavItem == _actionButton && _actionButton) {
@@ -1468,13 +1497,14 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             [[UIApplication sharedApplication] setStatusBarHidden:hidden withAnimation:animated ? UIStatusBarAnimationSlide : UIStatusBarAnimationNone];
             
         } else {
-            
             // View controller based so animate away
             _statusBarShouldBeHidden = hidden;
-            [UIView animateWithDuration:animationDuration animations:^(void) {
-                [self setNeedsStatusBarAppearanceUpdate];
-            } completion:^(BOOL finished) {}];
+//            [UIView animateWithDuration:animationDuration animations:^(void) {
+//                [self setNeedsStatusBarAppearanceUpdate];
+//            } completion:^(BOOL finished) {}];
             
+            //180327 fix iPhone X 無法隱藏的問題 
+            [self.navigationController setNavigationBarHidden:hidden];
         }
 
     }

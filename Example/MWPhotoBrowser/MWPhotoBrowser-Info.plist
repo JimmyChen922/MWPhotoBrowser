@@ -24,12 +24,24 @@
 	<string>1.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Enable camera access so that you can take photos, record videos and let others see you during video calls.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Letstalk syncs phone numbers and email from your address book to Letstalk servers to help you connect with other Letstalk users.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Enable microphone access to send voice messages.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This lets you choose which photos or videos you want to share with friends.</string>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
 	</array>
+	<key>UIRequiresFullScreen</key>
+	<false/>
 	<key>UIStatusBarHidden</key>
 	<false/>
 	<key>UISupportedInterfaceOrientations</key>
